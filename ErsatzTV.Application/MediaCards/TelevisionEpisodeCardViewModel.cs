@@ -18,11 +18,13 @@ public record TelevisionEpisodeCardViewModel(
     List<string> Writers,
     MediaItemState State,
     string Path,
-    string LocalPath) : MediaCardViewModel(
+    string LocalPath,
+    DateTime DateAdded) : MediaCardViewModel(
     EpisodeId,
     Title,
     $"Episode {Episode}",
     SortTitle,
     Poster,
     State,
-    HasMediaInfo: true);
+    HasMediaInfo: true,
+    DateAdded);

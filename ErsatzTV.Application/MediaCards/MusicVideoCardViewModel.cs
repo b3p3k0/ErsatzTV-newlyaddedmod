@@ -12,14 +12,16 @@ public record MusicVideoCardViewModel(
     string Poster,
     MediaItemState State,
     string Path,
-    string LocalPath) : MediaCardViewModel(
+    string LocalPath,
+    DateTime DateAdded) : MediaCardViewModel(
     MusicVideoId,
     Title,
     Subtitle,
     SortTitle,
     Poster,
     State,
-    HasMediaInfo: true)
+    HasMediaInfo: true,
+    DateAdded)
 {
     public int CustomIndex { get; set; }
 }

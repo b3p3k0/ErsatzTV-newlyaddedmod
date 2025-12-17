@@ -9,4 +9,5 @@ public record MediaCardViewModel(
     string SortTitle,
     string Poster,
     MediaItemState State,
-    bool HasMediaInfo);
+    bool HasMediaInfo,
+    DateTime DateAdded);

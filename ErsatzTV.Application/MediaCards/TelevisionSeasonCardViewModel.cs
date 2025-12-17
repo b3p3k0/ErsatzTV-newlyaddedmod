@@ -11,11 +11,13 @@ public record TelevisionSeasonCardViewModel(
     string SortTitle,
     string Poster,
     string Placeholder,
-    MediaItemState State) : MediaCardViewModel(
+    MediaItemState State,
+    DateTime DateAdded) : MediaCardViewModel(
     TelevisionSeasonId,
     Title,
     Subtitle,
     SortTitle,
     Poster,
     State,
-    HasMediaInfo: false);
+    HasMediaInfo: false,
+    DateAdded);

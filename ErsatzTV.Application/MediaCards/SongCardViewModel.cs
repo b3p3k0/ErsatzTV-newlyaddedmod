@@ -8,14 +8,16 @@ public record SongCardViewModel(
     string Subtitle,
     string SortTitle,
     string Poster,
-    MediaItemState State) : MediaCardViewModel(
+    MediaItemState State,
+    DateTime DateAdded) : MediaCardViewModel(
     SongId,
     Title,
     Subtitle,
     SortTitle,
     Poster,
     State,
-    HasMediaInfo: true)
+    HasMediaInfo: true,
+    DateAdded)
 {
     public int CustomIndex { get; set; }
 }

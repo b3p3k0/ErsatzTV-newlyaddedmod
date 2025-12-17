@@ -7,6 +7,8 @@
 @using ErsatzTV.Application.MediaCollections
 @using ErsatzTV.Application.Search
 @using ErsatzTV.Extensions
+@using ErsatzTV.Enums
+@using Microsoft.AspNetCore.WebUtilities
 @implements IDisposable
 
 <MudForm Style="max-height: 100%">
@@ -21,25 +23,42 @@
                         AddSelectionToPlaylist="@AddSelectionToPlaylist"
                         ClearSelection="@ClearSelection"
                         IsSelectMode="@IsSelectMode"
-                        SelectionLabel="@SelectionLabel"/>
+                        SelectionLabel="@SelectionLabel"
+                        SortMode="@_sortMode"
+                        SortModeChanged="@OnSortModeChanged"/>
     </MudPaper>
     <div class="d-flex flex-column" style="height: 100vh; overflow-x: auto">
         <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-8">
             <MudStack Row="true" Wrap="Wrap.Wrap">
-                <FragmentLetterAnchor TCard="MovieCardViewModel" Cards="@_data.Cards">
-                    <MediaCard Data="@context"
-                               Href="@($"media/movies/{context.MovieId}")"
-                               AddToCollectionClicked="@AddToCollection"
-                               SelectClicked="@(e => SelectClicked(context, e))"
-                               IsSelected="@IsSelected(context)"
-                               IsSelectMode="@IsSelectMode()"/>
-                </FragmentLetterAnchor>
+                @if (_sortMode == MediaSortMode.Title)
+                {
+                    <FragmentLetterAnchor TCard="MovieCardViewModel" Cards="@_data.Cards">
+                        <MediaCard Data="@context"
+                                   Href="@($"media/movies/{context.MovieId}")"
+                                   AddToCollectionClicked="@AddToCollection"
+                                   SelectClicked="@(e => SelectClicked(context, e))"
+                                   IsSelected="@IsSelected(context)"
+                                   IsSelectMode="@IsSelectMode()"/>
+                    </FragmentLetterAnchor>
+                }
+                else
+                {
+                    @foreach (MovieCardViewModel card in GetSortedCards())
+                    {
+                        <MediaCard Data="@card"
+                                   Href="@($"media/movies/{card.MovieId}")"
+                                   AddToCollectionClicked="@AddToCollection"
+                                   SelectClicked="@(e => SelectClicked(card, e))"
+                                   IsSelected="@IsSelected(card)"
+                                   IsSelectMode="@IsSelectMode()"/>
+                    }
+                }
             </MudStack>
         </MudContainer>
     </div>
 </MudForm>
 
-@if (_data.PageMap is not null)
+@if (_data.PageMap is not null && _sortMode == MediaSortMode.Title)
 {
     <LetterBar PageMap="@_data.PageMap"
                BaseUri="media/movies"
@@ -55,13 +74,59 @@
     private MovieCardResultsViewModel _data = new(0, new List<MovieCardViewModel>(), null);
     private string _query;
     private PersistingComponentStateSubscription _persistingSubscription;
+    private MediaSortMode _sortMode = MediaSortMode.Title;
 
     protected override Task OnInitializedAsync()
     {
         _persistingSubscription = ApplicationState.RegisterOnPersisting(PersistData);
         _query = NavigationManager.Uri.GetSearchQuery();
+        _sortMode = GetSortModeFromUrl();
 
         return base.OnInitializedAsync();
+    }
+
+    private MediaSortMode GetSortModeFromUrl()
+    {
+        var uri = new Uri(NavigationManager.Uri);
+        var parsed = QueryHelpers.ParseQuery(uri.Query);
+        if (parsed.TryGetValue("sort", out var value) && value == "dateadded")
+        {
+            return MediaSortMode.DateAdded;
+        }
+        return MediaSortMode.Title;
+    }
+
+    private IEnumerable<MovieCardViewModel> GetSortedCards()
+    {
+        return _sortMode switch
+        {
+            MediaSortMode.DateAdded => _data.Cards.OrderByDescending(m => m.DateAdded),
+            _ => _data.Cards.OrderBy(m => m.SortTitle)
+        };
+    }
+
+    private void OnSortModeChanged(MediaSortMode newSortMode)
+    {
+        _sortMode = newSortMode;
+        NavigationManager.NavigateTo(BuildNavigationUri($"media/movies/page/{PageNumber}"));
+    }
+
+    private string BuildNavigationUri(string basePath)
+    {
+        var queryParams = new List<string>();
+
+        if (!string.IsNullOrWhiteSpace(_query))
+        {
+            (string key, string value) = _query.EncodeQuery();
+            queryParams.Add($"{key}={value}");
+        }
+
+        if (_sortMode == MediaSortMode.DateAdded)
+        {
+            queryParams.Add("sort=dateadded");
+        }
+
+        return queryParams.Any() ? $"{basePath}?{string.Join("&", queryParams)}" : basePath;
     }
 
     protected override async Task OnParametersSetAsync()
@@ -102,33 +167,19 @@
 
     private void PrevPage()
     {
-        var uri = $"media/movies/page/{PageNumber - 1}";
-        if (!string.IsNullOrWhiteSpace(_query))
-        {
-            (string key, string value) = _query.EncodeQuery();
-            uri = $"{uri}?{key}={value}";
-        }
-
-        NavigationManager.NavigateTo(uri);
+        NavigationManager.NavigateTo(BuildNavigationUri($"media/movies/page/{PageNumber - 1}"));
     }
 
     private void NextPage()
     {
-        var uri = $"media/movies/page/{PageNumber + 1}";
-        if (!string.IsNullOrWhiteSpace(_query))
-        {
-            (string key, string value) = _query.EncodeQuery();
-            uri = $"{uri}?{key}={value}";
-        }
-
-        NavigationManager.NavigateTo(uri);
+        NavigationManager.NavigateTo(BuildNavigationUri($"media/movies/page/{PageNumber + 1}"));
     }
 
     private void SelectClicked(MediaCardViewModel card, MouseEventArgs e)
     {
         List<MediaCardViewModel> GetSortedItems()
         {
-            return _data.Cards.OrderBy(m => m.SortTitle).ToList<MediaCardViewModel>();
+            return GetSortedCards().ToList<MediaCardViewModel>();
         }
 
         SelectClicked(GetSortedItems, card, e);

@@ -19,7 +19,8 @@ internal static class Mapper
             showMetadata.Year?.ToString(CultureInfo.InvariantCulture),
             showMetadata.SortTitle,
             GetPoster(showMetadata, maybeJellyfin, maybeEmby),
-            showMetadata.Show.State);
+            showMetadata.Show.State,
+            showMetadata.DateAdded);
 
     internal static TelevisionSeasonCardViewModel ProjectToViewModel(
         Season season,
@@ -35,7 +36,8 @@ internal static class Mapper
             season.SeasonMetadata.HeadOrNone().Map(sm => GetPoster(sm, maybeJellyfin, maybeEmby))
                 .IfNone(string.Empty),
             season.SeasonNumber == 0 ? "S" : new string(season.SeasonNumber.ToString(CultureInfo.InvariantCulture).Take(20).ToArray()),
-            season.State);
+            season.State,
+            season.SeasonMetadata.HeadOrNone().Match(sm => sm.DateAdded, () => DateTime.UtcNow));
 
     internal static TelevisionSeasonCardViewModel ProjectToViewModel(
         SeasonMetadata seasonMetadata,
@@ -57,7 +59,8 @@ internal static class Mapper
             seasonMetadata.Season.SeasonNumber == 0
                 ? "S"
                 : seasonMetadata.Season.SeasonNumber.ToString(CultureInfo.InvariantCulture),
-            seasonMetadata.Season.State);
+            seasonMetadata.Season.State,
+            seasonMetadata.DateAdded);
     }
 
     internal static TelevisionEpisodeCardViewModel ProjectToViewModel(
@@ -88,7 +91,8 @@ internal static class Mapper
             episodeMetadata.Writers.Map(w => w.Name).ToList(),
             episodeMetadata.Episode.State,
             episodeMetadata.Episode.GetHeadVersion().MediaFiles.Head().Path,
-            localPath);
+            localPath,
+            episodeMetadata.DateAdded);
 
     internal static MovieCardViewModel ProjectToViewModel(
         MovieMetadata movieMetadata,
@@ -100,7 +104,8 @@ internal static class Mapper
             movieMetadata.Year?.ToString(CultureInfo.InvariantCulture),
             movieMetadata.SortTitle,
             GetPoster(movieMetadata, maybeJellyfin, maybeEmby),
-            movieMetadata.Movie.State);
+            movieMetadata.Movie.State,
+            movieMetadata.DateAdded);
 
     internal static MusicVideoCardViewModel ProjectToViewModel(
         MusicVideoMetadata musicVideoMetadata,
@@ -115,7 +120,8 @@ internal static class Mapper
             GetThumbnail(musicVideoMetadata, None, None),
             musicVideoMetadata.MusicVideo.State,
             musicVideoMetadata.MusicVideo.GetHeadVersion().MediaFiles.Head().Path,
-            localPath);
+            localPath,
+            musicVideoMetadata.DateAdded);
 
     internal static OtherVideoCardViewModel ProjectToViewModel(OtherVideoMetadata otherVideoMetadata)
     {
@@ -131,7 +137,8 @@ internal static class Mapper
             otherVideoMetadata.OriginalTitle,
             otherVideoMetadata.SortTitle,
             poster,
-            otherVideoMetadata.OtherVideo.State);
+            otherVideoMetadata.OtherVideo.State,
+            otherVideoMetadata.DateAdded);
     }
 
     internal static SongCardViewModel ProjectToViewModel(SongMetadata songMetadata)
@@ -143,7 +150,8 @@ internal static class Mapper
             string.Join(", ", songMetadata.Artists ?? []) + album,
             songMetadata.SortTitle,
             GetThumbnail(songMetadata, None, None),
-            songMetadata.Song.State);
+            songMetadata.Song.State,
+            songMetadata.DateAdded);
     }
 
     internal static ImageCardViewModel ProjectToViewModel(ImageMetadata imageMetadata) =>
@@ -153,7 +161,8 @@ internal static class Mapper
             imageMetadata.OriginalTitle,
             imageMetadata.SortTitle,
             string.Empty, // TODO: thumbnail?
-            imageMetadata.Image.State);
+            imageMetadata.Image.State,
+            imageMetadata.DateAdded);
 
     internal static RemoteStreamCardViewModel ProjectToViewModel(RemoteStreamMetadata remoteStreamMetadata) =>
         new(
@@ -162,7 +171,8 @@ internal static class Mapper
             remoteStreamMetadata.OriginalTitle,
             remoteStreamMetadata.SortTitle,
             GetThumbnail(remoteStreamMetadata, None, None),
-            remoteStreamMetadata.RemoteStream.State);
+            remoteStreamMetadata.RemoteStream.State,
+            remoteStreamMetadata.DateAdded);
 
     internal static ArtistCardViewModel ProjectToViewModel(ArtistMetadata artistMetadata) =>
         new(
@@ -171,7 +181,8 @@ internal static class Mapper
             artistMetadata.Disambiguation,
             artistMetadata.SortTitle,
             GetThumbnail(artistMetadata, None, None),
-            artistMetadata.Artist.State);
+            artistMetadata.Artist.State,
+            artistMetadata.DateAdded);
 
     internal static CollectionCardResultsViewModel
         ProjectToViewModel(
