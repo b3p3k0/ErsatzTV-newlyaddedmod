@@ -12,7 +12,8 @@ internal static class Mapper
             collection.Id,
             collection.Name,
             collection.UseCustomPlaybackOrder,
-            MediaItemState.Normal);
+            MediaItemState.Normal,
+            DateTime.UtcNow);
 
     internal static MultiCollectionViewModel ProjectToViewModel(MultiCollection multiCollection) =>
         new(

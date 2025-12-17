@@ -8,11 +8,13 @@ public record MediaCollectionViewModel(
     int Id,
     string Name,
     bool UseCustomPlaybackOrder,
-    MediaItemState State) : MediaCardViewModel(
+    MediaItemState State,
+    DateTime DateAdded) : MediaCardViewModel(
     Id,
     Name,
     string.Empty,
     Name,
     string.Empty,
     State,
-    HasMediaInfo: false);
+    HasMediaInfo: false,
+    DateAdded);

@@ -242,7 +242,7 @@ internal static class Mapper
                 .SetQueryParam("maxHeight", 440);
         }
 
-        return new ActorCardViewModel(actor.Id, actor.Name, actor.Role, artwork, MediaItemState.Normal);
+        return new ActorCardViewModel(actor.Id, actor.Name, actor.Role, artwork, MediaItemState.Normal, actor.Artwork?.DateAdded ?? DateTime.UtcNow);
     }
 
     private static int GetCustomIndex(Collection collection, int mediaItemId) =>
