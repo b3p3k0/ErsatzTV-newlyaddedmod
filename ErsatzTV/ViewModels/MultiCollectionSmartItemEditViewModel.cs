@@ -19,7 +19,8 @@ public class MultiCollectionSmartItemEditViewModel : MultiCollectionItemEditView
                 _smartCollection.Id,
                 _smartCollection.Name,
                 false,
-                MediaItemState.Normal);
+                MediaItemState.Normal,
+                DateTime.UtcNow);
         }
     }
 
